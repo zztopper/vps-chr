@@ -1,0 +1,37 @@
+#!/bin/bash
+if [[ $# -lt 3 ]] ; then
+    echo "Usage: $(basename "$0") user hostname_or_ip_address ssh-port"
+    exit 0
+fi
+
+CONVERT="PLACEHOLDER URL"
+PREP="PLACEHOLDER URL"
+
+echo "Deleting $2 from known_hosts"
+ssh-keygen -R "[$2]:$3"
+echo "Sending SSH-key to $2"
+ssh-copy-id -f $1@$2 -p $3
+echo "Installing CHR"
+ssh -p $3 -o ServerAliveInterval=10 -o ServerAliveCountMax=1 $1@$2 "wget $CONVERT -O ~/make-chr.sh && chmod +x ~/make-chr.sh && ~/make-chr.sh"
+echo "Now reboot VM using VDS control panel to boot into CHR"
+read -p "Then press Enter when rebooted" -n1 -s
+
+unameOut="$(uname -s)"
+case "${unameOut}" in
+    Linux*)     WAIT='w';;
+    Darwin*)    WAIT='i';;
+    *)          machine="w" #Like linux I guess
+esac
+
+while ! ping -c 1 -n -$WAIT 1 $2 &> /dev/null
+do
+    printf "%c" "."
+done
+printf "\n%s\n"  "$2 is back online"
+
+sleep 5
+echo "Deleting $2 from known_hosts as key hash has changed"
+ssh-keygen -R "[$2]:$3"
+ssh -p $3 $1@$2 "/tool fetch output=file dst-path=prepare.rsc $PREP
+/import file=prepare.rsc
+"
