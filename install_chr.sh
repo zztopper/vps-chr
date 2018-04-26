@@ -1,8 +1,16 @@
 #!/bin/bash
+cat << EOF
+ _______________     ____
+|__  /__  /_   _|__ |  _ \\
+  / /  / /  | |/ _ \| |_) |
+ / /_ / /_  | | (_) |  __/
+/____/____| |_|\___/|_|
+EOF
+
 VER=`curl -s http://upgrade.mikrotik.com/routeros/LATEST.6 -H 'User-Agent: RouterOS 6.39.2'`
 LATEST=`echo $VER|cut -d" " -f1`
 TS=`echo $VER|cut -d" " -f2`
-DAT=`date -r $TS`
+DAT=`date -d @$(date -u +"$TS")`
 echo "Latest version online is: $LATEST,
 it was updated on: $DAT"
 #Setting variables
@@ -25,7 +33,7 @@ echo "Check parameters, if wrong - press Ctrl+C"
 sleep 10
 
 #Installing Prerequisities
-apt-get update&&apt-get install pv wget unzip kpartx qemu-utils -y
+#apt-get update&&apt-get install pv wget unzip kpartx qemu-utils -y
 
 #Begin installing
 wget https://download2.mikrotik.com/routeros/$LATEST/chr-$LATEST.img.zip -O chr.img.zip
